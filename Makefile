@@ -16,7 +16,7 @@ c3-supermini:
 upload-d1-mini: d1-mini
 	arduino-cli upload -v -p $(WEMOS_D1_MINI_PORT) --fqbn $(WEMOS_D1_MINI_BOARD)
 
-upload-c3-supermini
+upload-c3-supermini:
 	arduino-cli upload -v -p $(ESP32C3_SUPERMINI_PORT) --fqbn $(ESP32C3_SUPERMINI_BOARD)
 
 monitor-d1-mini:
