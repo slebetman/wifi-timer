@@ -1,4 +1,9 @@
+#include "platform.h"
+#if defined(WEMOS_D1_MINI)
 #include <Servo.h>
+#elif defined(ESP32_C3)
+#include <ESP32Servo.h>
+#endif
 #include "tick.h"
 #include "ramp.h"
 #include "delay.h"
@@ -10,8 +15,13 @@
 
 #define AP_SSID     "TIMER_00001"
 
+#if defined(WEMOS_D1_MINI)
 #define BUTTON_PIN  D1
 #define ESC_PIN     D2
+#elif defined(ESP32_C3)
+#define BUTTON_PIN  0
+#define ESC_PIN     1
+#endif
 
 #define SERVO_MIN   1000
 #define SERVO_MAX   2000
@@ -24,7 +34,7 @@ Tick timer;
 Ramp rampUp(THROTTLE_OFF, THROTTLE_FULL);
 Ramp rampDown(THROTTLE_FULL, THROTTLE_OFF);
 Delay esc;
-Delay pause;
+Delay cruise;
 Blink escBlink(LED_BUILTIN, 100);
 Blink runBlink(LED_BUILTIN, 500);
 Button button(BUTTON_PIN);
@@ -88,7 +98,7 @@ void setup()
 			if (timer.tick())
 			{
 				check = digitalRead(BUTTON_PIN);
-				ESP.wdtFeed();
+				// ESP.wdtFeed();
 				if (check == HIGH)
 				{
 					setThrottle(THROTTLE_OFF);
@@ -137,7 +147,7 @@ void loop()
 
 					rampUp.setTo(throttleMax);
 					rampUp.init(vars.rampUp);
-					pause.init(vars.cruise);
+					cruise.init(vars.cruise);
 					rampDown.setFrom(throttleMax);
 					rampDown.init(vars.rampDown);
 				}
@@ -162,7 +172,7 @@ void run()
 			end();
 		}
 	}
-	else if (pause.wait())
+	else if (cruise.wait())
 	{
 		setThrottle(std::round(rampUp.value));
 		if (cancelButton.click())

@@ -1,10 +1,19 @@
+#include "platform.h"
+#if defined(WEMOS_D1_MINI)
 #include <ESP8266WebServer.h>
+#elif defined(ESP32_C3)
+#include <WebServer.h>
+#endif
 #include "vars.h"
 
 class Web
 {
 private:
+	#if defined(WEMOS_D1_MINI)
 	ESP8266WebServer server;
+	#elif defined(ESP32_C3)
+	WebServer server;
+	#endif
 
 	// Function to handle the root URL (/)
 	void handleRoot()

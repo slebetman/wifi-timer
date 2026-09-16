@@ -1,4 +1,9 @@
+#include "platform.h"
+#if defined(WEMOS_D1_MINI)
 #include <ESP8266WiFi.h>
+#elif defined(ESP32_C3)
+#include <WiFi.h>
+#endif
 
 IPAddress local_IP(192, 168, 0, 1);
 IPAddress gateway(192, 168, 0, 1);
