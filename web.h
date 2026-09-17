@@ -1,18 +1,25 @@
+#ifndef WEB
+#define WEB
+
 #include "platform.h"
 #if defined(WEMOS_D1_MINI)
-#include <ESP8266WebServer.h>
+	#include <ESP8266WebServer.h>
 #elif defined(ESP32_C3)
-#include <WebServer.h>
+	#include <WebServer.h>
 #endif
 #include "vars.h"
+#include "button.h"
+
+extern Button button;
+extern Button cancelButton;
 
 class Web
 {
 private:
 	#if defined(WEMOS_D1_MINI)
-	ESP8266WebServer server;
+		ESP8266WebServer server;
 	#elif defined(ESP32_C3)
-	WebServer server;
+		WebServer server;
 	#endif
 
 	// Function to handle the root URL (/)
@@ -69,6 +76,7 @@ private:
 							color: #fff;
 							border: 0px;
 							margin-top: 5px;
+							margin-bottom: 25px;
 						}
 					</style>
 				</head>
@@ -84,6 +92,9 @@ private:
 
 		html += R"(
 					<button type="submit">Update Settings</button>
+					</form>
+					<form action="/click" method="POST">
+						<button type="submit">Start/Stop Timer</button>
 					</form>
 				</body>
 			</html>)";
@@ -111,9 +122,6 @@ private:
 			vars.rampDown = sDown.toFloat();
 
 			saveVars();
-
-			// server.sendHeader("Location", "/", true);
-			// server.send(302, "text/plain", "");
 
 			String html = R"(<!DOCTYPE html><html>
 				<head>
@@ -158,6 +166,57 @@ private:
 		}
 	}
 
+	void handleButtonClick()
+	{
+		String message;
+
+		if (button.click()) {
+			message = "Stopped.";
+			cancelButton.softwareClick();
+		}
+		else {
+			message = "Started.";
+			button.softwareClick();
+		}
+
+		String html = R"(<!DOCTYPE html><html>
+			<head>
+				<meta name="viewport" content="width=device-width, initial-scale=1.0">
+				<style>
+					* {
+						font-size: 1rem;
+						font-family: sans-serif;
+					}
+					html {
+						display: flex;
+						justify-content: center;
+					}
+					body {
+						display: inline-block;
+						margin-top: 50px;
+						color: #333;
+						background-color: #e0e0e0;
+					}
+					p {
+						margin: 8px 0;
+					}
+				</style>
+			</head>
+			<body>
+				<p>
+					<b>)" + message + R"(</b>
+				</p>
+				<script>
+					setTimeout(() => {
+						window.location.href = "/";
+					}, 1000)
+				</script>
+			</body>
+		</html>)";
+
+		server.send(200, "text/html", html);
+	}
+
 	// Function to handle 404 Not Found errors
 	void handleNotFound()
 	{
@@ -172,6 +231,7 @@ public:
 		// Define routing paths
 		server.on("/", std::bind(&Web::handleRoot, this));
 		server.on("/update", HTTP_POST, std::bind(&Web::handlePost, this));
+		server.on("/click", HTTP_POST, std::bind(&Web::handleButtonClick, this));
 		server.onNotFound(std::bind(&Web::handleNotFound, this));
 
 		// Start the server
@@ -185,3 +245,5 @@ public:
 		server.handleClient();
 	}
 };
+
+#endif
