@@ -1,3 +1,6 @@
+#ifndef BUTTON
+#define BUTTON
+
 class Button
 {
 private:
@@ -180,3 +183,5 @@ public:
 		return false;
 	}
 };
+
+#endif

@@ -15,14 +15,6 @@
 
 #define AP_SSID     "TIMER_00001"
 
-#if defined(WEMOS_D1_MINI)
-#define BUTTON_PIN  D1
-#define ESC_PIN     D2
-#elif defined(ESP32_C3)
-#define BUTTON_PIN  0
-#define ESC_PIN     1
-#endif
-
 #define SERVO_MIN   1000
 #define SERVO_MAX   2000
 
