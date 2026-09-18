@@ -140,9 +140,79 @@ private:
 		server.send(200, "text/html", html);
 	}
 
+	String quickMessage (String className, String message) {
+		String html = R"(<!DOCTYPE html><html>
+			<head>
+				<meta name="viewport" content="width=device-width, initial-scale=1.0">
+				<style>
+					* {
+						font-size: 1rem;
+						font-family: sans-serif;
+					}
+					html {
+						display: flex;
+						justify-content: center;
+					}
+					body {
+						display: flex;
+						flex-direction: column;
+						align-items: center;
+						margin-top: 50px;
+						color: #333;
+						background-color: #e0e0e0;
+					}
+					p {
+						margin: 8px 0;
+					}
+					button {
+						border-radius: 10px;
+						padding: 5px 10px;
+						background-color: #007bff;
+						color: #fff;
+						border: 0px;
+						margin-top: 5px;
+						margin-bottom: 25px;
+					}
+					.error {
+						color: #f33;
+					}
+				</style>
+			</head>
+			<body>
+				<p>
+					<b class=")" +
+					  className + R"(">)" +
+					  message + R"(</b>
+				</p>)";
+		if (className.equals("error")) {
+			html += R"(
+				<button id="backBtn">OK</button>
+				<script>
+					document.getElementById('backBtn').onclick = () => {
+						window.location.href = "/";
+					}
+				</script>
+			)";
+		}
+		else {
+			html +=	R"(<script>
+				setTimeout(() => {
+					window.location.href = "/";
+				}, 1000)
+			</script>)";
+		}
+		html += "</body></html>";
+
+		return html;
+	}
+
 	void handleUpdate()
 	{
-		if (
+		if (button.click())
+		{
+			server.send(400, "text/html", quickMessage("error", "Error: Cannot modify settings while timer is running"));
+		}
+		else if (
 			server.hasArg("max") &&
 			server.hasArg("startDelay") &&
 			server.hasArg("rampUp") &&
@@ -164,46 +234,11 @@ private:
 
 			saveVars();
 
-			String html = R"(<!DOCTYPE html><html>
-				<head>
-					<meta name="viewport" content="width=device-width, initial-scale=1.0">
-					<style>
-						* {
-							font-size: 1rem;
-							font-family: sans-serif;
-						}
-						html {
-							display: flex;
-							justify-content: center;
-						}
-						body {
-							display: inline-block;
-							margin-top: 50px;
-							color: #333;
-							background-color: #e0e0e0;
-						}
-						p {
-							margin: 8px 0;
-						}
-					</style>
-				</head>
-				<body>
-					<p>
-						<b>Updated!</b>
-					</p>
-					<script>
-						setTimeout(() => {
-							window.location.href = "/";
-						}, 1000)
-					</script>
-				</body>
-			</html>)";
-
-			server.send(200, "text/html", html);
+			server.send(200, "text/html", quickMessage("info", "Updated!"));
 		}
 		else
 		{
-			server.send(400, "text/plain", "Bad Request: Missing parameters");
+			server.send(400, "text/html", quickMessage("error", "Error: Missing parameters"));
 		}
 	}
 
@@ -222,43 +257,7 @@ private:
 			button.softwareClick();
 		}
 
-		String html = R"(<!DOCTYPE html><html>
-			<head>
-				<meta name="viewport" content="width=device-width, initial-scale=1.0">
-				<style>
-					* {
-						font-size: 1rem;
-						font-family: sans-serif;
-					}
-					html {
-						display: flex;
-						justify-content: center;
-					}
-					body {
-						display: inline-block;
-						margin-top: 50px;
-						color: #333;
-						background-color: #e0e0e0;
-					}
-					p {
-						margin: 8px 0;
-					}
-				</style>
-			</head>
-			<body>
-				<p>
-					<b>)" +
-					  message + R"(</b>
-				</p>
-				<script>
-					setTimeout(() => {
-						window.location.href = "/";
-					}, 1000)
-				</script>
-			</body>
-		</html>)";
-
-		server.send(200, "text/html", html);
+		server.send(200, "text/html", quickMessage("info", message));
 	}
 
 	// Function to handle 404 Not Found errors
