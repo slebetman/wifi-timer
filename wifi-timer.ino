@@ -1,9 +1,4 @@
 #include "platform.h"
-#if defined(WEMOS_D1_MINI)
-	#include <Servo.h>
-#elif defined(ESP32_C3)
-	#include <ESP32Servo.h>
-#endif
 #include "tick.h"
 #include "ramp.h"
 #include "delay.h"
@@ -12,16 +7,10 @@
 #include "web.h"
 #include "vars.h"
 #include "blink.h"
+#include "throttle.h"
 
 #define AP_SSID     "TIMER_00001"
 
-#define SERVO_MIN   1000
-#define SERVO_MAX   2000
-
-#define THROTTLE_OFF SERVO_MIN
-#define THROTTLE_FULL SERVO_MAX
-
-Servo throttle;
 Tick timer;
 Ramp rampUp(THROTTLE_OFF, THROTTLE_FULL);
 Ramp rampDown(THROTTLE_FULL, THROTTLE_OFF);
@@ -34,26 +23,6 @@ Button button(BUTTON_PIN);
 Button cancelButton(BUTTON_PIN);
 Web server(80);
 Wifi wifi;
-
-// Calling .writeMicroseconds too frequently corrupts millis()
-// This is for rate limiting:
-byte throttleCount = 0;
-int throttleValue;
-#define THROTTLE_BANDGAP 20
-#define THROTTLE_RATE 50
-void setThrottle(int value)
-{
-	throttleCount++;
-	if (
-		std::abs(value - throttleValue) > THROTTLE_BANDGAP ||
-		throttleCount > THROTTLE_RATE
-	)
-	{
-		throttleValue = value;
-		throttleCount = 0;
-		throttle.writeMicroseconds(value);
-	}
-}
 
 void initialize()
 {
@@ -76,7 +45,7 @@ void setup()
 	Serial.begin(115200);
 	delay(10);
 
-	throttle.attach(ESC_PIN);
+	initThrottle(ESC_PIN);
 
 	int check = digitalRead(BUTTON_PIN);
 
