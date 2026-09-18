@@ -27,6 +27,7 @@ Ramp rampUp(THROTTLE_OFF, THROTTLE_FULL);
 Ramp rampDown(THROTTLE_FULL, THROTTLE_OFF);
 Delay esc;
 Delay cruise;
+Delay startDelay;
 Blink escBlink(LED_BUILTIN, 100);
 Blink runBlink(LED_BUILTIN, 500);
 Button button(BUTTON_PIN);
@@ -137,6 +138,7 @@ void loop()
 
 					Serial.println("Click!");
 
+					startDelay.init(vars.startDelay);
 					rampUp.setTo(throttleMax);
 					rampUp.init(vars.rampUp);
 					cruise.init(vars.cruise);
@@ -156,7 +158,15 @@ void loop()
 void run()
 {
 	runBlink.blink();
-	if (rampUp.run())
+	if (startDelay.wait())
+	{
+		setThrottle(THROTTLE_OFF);
+		if (cancelButton.click())
+		{
+			end();
+		}
+	}
+	else if (rampUp.run())
 	{
 		setThrottle(std::round(rampUp.value));
 		if (cancelButton.click())
