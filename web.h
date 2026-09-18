@@ -49,7 +49,7 @@ private:
 						h1 {
 							color: #007bff;
 						}
-						form {
+						div.form {
 							display: flex;
 							flex-direction: column;
 						}
@@ -82,17 +82,19 @@ private:
 				</head>
 				<body>
 					<h1>Slebetman's Wifi Timer</h1>
-					<form action="/click" method="GET">
-						<button id="clickBtn" type="submit">Start/Stop Timer</button>
-					</form>
+					<div class="form">
+						<button id="clickBtn">Start/Stop Timer</button>
+					</div>
 					<script>
-						btn = document.getElementById('clickBtn');
-						btn.onclick = function (e) {
+						function get (id) {
+							return document.getElementById(id);
+						}
+						get('clickBtn').onclick = function (e) {
 							e.preventDefault();
 							window.location.href = "/click";
 						}
 					</script>
-					<form action="/update" method="POST">
+					<div class="form">
 			)";
 
 		html += "<p><label>Max Power: </label>";
@@ -115,15 +117,30 @@ private:
 		html += "<input type=\"text\" id=\"rampDown\" name=\"rampDown\" value=\"" +
 				String(v->rampDown) + "\"> seconds</p>\n";
 
-		html += R"(<button type="submit">Update Settings</button>
-					</form>
+		html += R"(<button id="updateBtn">Update Settings</button>
+					</div>
+					<script>
+						function val (id) {
+							return `${id}=${get(id).value}`;
+						}
+						get('updateBtn').onclick = function (e) {
+							e.preventDefault();
+
+							window.location.href = '/update?' +
+								val('max') + '&' +
+								val('startDelay') + '&' +
+								val('rampUp') + '&' +
+								val('cruise') + '&' +
+								val('rampDown');
+						}
+					</script>
 				</body>
 			</html>)";
 
 		server.send(200, "text/html", html);
 	}
 
-	void handlePost()
+	void handleUpdate()
 	{
 		if (
 			server.hasArg("max") &&
@@ -257,7 +274,7 @@ public:
 	{
 		// Define routing paths
 		server.on("/", std::bind(&Web::handleRoot, this));
-		server.on("/update", HTTP_POST, std::bind(&Web::handlePost, this));
+		server.on("/update", std::bind(&Web::handleUpdate, this));
 		server.on("/click", std::bind(&Web::handleButtonClick, this));
 		server.onNotFound(std::bind(&Web::handleNotFound, this));
 
