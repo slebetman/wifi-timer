@@ -81,7 +81,7 @@ private:
 					</style>
 				</head>
 				<body>
-					<h1>D1 Timer</h1>
+					<h1>Slebetman's Wifi Timer</h1>
 					<form action="/click" method="GET">
 						<button id="clickBtn" type="submit">Start/Stop Timer</button>
 					</form>
